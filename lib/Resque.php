@@ -342,4 +342,3 @@ class Resque
 	    return ($result == 1) ? $counter : 0;
 	}
 }
-

@@ -111,32 +111,36 @@ class Resque_Redis
 	 */
     public function __construct($server, $database = null)
 	{
-		if (is_array($server)) {
-			$this->driver = new Credis_Cluster($server);
-		}
-		else {
+		try {
+			if (is_array($server)) {
+				$this->driver = new Credis_Cluster($server);
+			}
+			else {
+				list($host, $port, $dsnDatabase, $user, $password, $options) = self::parseDsn($server);
+				// $user is not used, only $password
 
-			list($host, $port, $dsnDatabase, $user, $password, $options) = self::parseDsn($server);
-			// $user is not used, only $password
+				// Look for known Credis_Client options
+				$timeout = isset($options['timeout']) ? intval($options['timeout']) : null;
+				$persistent = isset($options['persistent']) ? $options['persistent'] : '';
 
-			// Look for known Credis_Client options
-			$timeout = isset($options['timeout']) ? intval($options['timeout']) : null;
-			$persistent = isset($options['persistent']) ? $options['persistent'] : '';
+				$this->driver = new Credis_Client($host, $port, $timeout, $persistent);
+				if ($password){
+					$this->driver->auth($password);
+				}
 
-			$this->driver = new Credis_Client($host, $port, $timeout, $persistent);
-			if ($password){
-				$this->driver->auth($password);
+				// If we have found a database in our DSN, use it instead of the `$database`
+				// value passed into the constructor.
+				if ($dsnDatabase !== false) {
+					$database = $dsnDatabase;
+				}
 			}
 
-			// If we have found a database in our DSN, use it instead of the `$database`
-			// value passed into the constructor.
-			if ($dsnDatabase !== false) {
-				$database = $dsnDatabase;
+			if ($database !== null) {
+				$this->driver->select($database);
 			}
 		}
-
-		if ($database !== null) {
-			$this->driver->select($database);
+		catch(CredisException $e) {
+			throw new Resque_RedisException($e);
 		}
 	}
 
@@ -228,7 +232,7 @@ class Resque_Redis
 			return $this->driver->__call($name, $args);
 		}
 		catch (CredisException $e) {
-			return false;
+			throw new Resque_RedisException($e);
 		}
 	}
 
