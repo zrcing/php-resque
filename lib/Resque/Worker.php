@@ -156,6 +156,11 @@ class Resque_Worker
 			if($this->shutdown) {
 				break;
 			}
+			if (is_null(Resque::redis())) {
+			    usleep($interval * 1000000);
+			    $this->logger->log(Psr\Log\LogLevel::INFO, 'Redis shutdown');
+			    continue;
+			}
 
 			// Attempt to find and reserve a job
 			$job = false;

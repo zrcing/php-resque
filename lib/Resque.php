@@ -53,15 +53,27 @@ class Resque
 	public static function redis()
 	{
 		if (self::$redis !== null) {
-			return self::$redis;
+		    $pingResult = self::$redis->ping();
+		    if (strpos(strtoupper($pingResult), 'PONG') !== false) {
+		        return self::$redis;
+		    }
+		    self::$redis = null;
 		}
-
-		if (is_callable(self::$redisServer)) {
-			self::$redis = call_user_func(self::$redisServer, self::$redisDatabase);
-		} else {
-			self::$redis = new Resque_Redis(self::$redisServer, self::$redisDatabase);
+		
+		try {
+    		if (is_callable(self::$redisServer)) {
+    			self::$redis = call_user_func(self::$redisServer, self::$redisDatabase);
+    		} else {
+    			self::$redis = new Resque_Redis(self::$redisServer, self::$redisDatabase);
+    		}
+    		$pingResult = self::$redis->ping();
+    		if (strpos(strtoupper($pingResult), 'PONG') === false) {
+    		    self::$redis = null;
+    		}
+		} catch (Exception $e) {
+		    self::$redis = null;
 		}
-
+		
 		return self::$redis;
 	}
 
