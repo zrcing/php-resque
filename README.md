@@ -1,7 +1,9 @@
-Automatic reconnect Redis for php-resque. Fork chrisboulton/php-resque
+Automatic reconnect Redis for php-resque
 ===========================================
-php-resque: PHP Resque Worker (and Enqueue)
-===========================================
+
+Fork chrisboulton/php-resque
+
+## php-resque: PHP Resque Worker (and Enqueue) ##
 
 Resque is a Redis-backed library for creating background jobs, placing
 those jobs on one or more queues, and processing them later.
