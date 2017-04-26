@@ -1,5 +1,4 @@
 # PHP port of resque (Workers and Queueing) -Automatically reconnect the redis. 
-===========================================
 
 Fork chrisboulton/php-resque.
 
